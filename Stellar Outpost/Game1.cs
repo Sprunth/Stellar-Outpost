@@ -40,7 +40,7 @@ namespace Stellar_Outpost
 
 			var grassTex = Content.LoadTexture(Nez.Content.Grass);
 			
-			for (var i=0; i< 2; i++)
+			for (var i=0; i< 5; i++)
             {
 				var grass = scene.CreateEntity($"grass-{i}");
 				grass.AddComponent(new SpriteRenderer(grassTex))
