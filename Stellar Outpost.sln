@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stellar Outpost", "Stellar 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nez.MG38", "Nez\Nez.Portable\Nez.MG38.csproj", "{905BD929-403E-4F28-AAFA-820C2986327D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nez.MG38.FarseerPhysics", "Nez\Nez.FarseerPhysics\Nez.MG38.FarseerPhysics.csproj", "{2D823127-6707-487E-96B3-79B8D3A2468A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{905BD929-403E-4F28-AAFA-820C2986327D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{905BD929-403E-4F28-AAFA-820C2986327D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{905BD929-403E-4F28-AAFA-820C2986327D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D823127-6707-487E-96B3-79B8D3A2468A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D823127-6707-487E-96B3-79B8D3A2468A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D823127-6707-487E-96B3-79B8D3A2468A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D823127-6707-487E-96B3-79B8D3A2468A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

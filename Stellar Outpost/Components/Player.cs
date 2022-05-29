@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Nez.Sprites;
 using Microsoft.Xna.Framework;
+using Nez.Farseer;
+using FarseerPhysics.Dynamics;
 
 namespace Stellar_Outpost.Components
 {
@@ -20,7 +22,7 @@ namespace Stellar_Outpost.Components
         private const float MaxJumpTime = 0.35f;
         private const float JumpLaunchVelocity = -3500.0f;
         private const float JumpControlPower = 0.14f;
-        private const float GravityAcceleration = 3400.0f;
+        private const float GravityAcceleration = 340.0f;
         private const float MaxFallSpeed = 550.0f;
 
         public bool IsOnGround
@@ -44,10 +46,13 @@ namespace Stellar_Outpost.Components
             var texture = Entity.Scene.Content.LoadTexture(Content.Player);
             Entity.AddComponent(new SpriteRenderer(texture));
             Entity.AddComponent<Mover>();
-            Entity.AddComponent<CircleCollider>();
-            Entity.Position = new Vector2(640, 90);
-
+            Entity.AddComponent<FSRigidBody>()
+                .SetBodyType(BodyType.Kinematic)
+                .AddComponent<FSCollisionBox>()
+                .SetSize(texture.Width, texture.Height);
             
+            
+            Entity.Position = new Vector2(640, 90);
         }
 
         void IUpdatable.Update()
@@ -87,6 +92,8 @@ namespace Stellar_Outpost.Components
             velocity.Y = MathHelper.Clamp(velocity.Y + GravityAcceleration * elapsed, -MaxFallSpeed, MaxFallSpeed);
             
             
+            
+            
             velocity.Y = DoJump(velocity.Y);
 
             // Apply pseudo-drag horizontally.
@@ -99,16 +106,23 @@ namespace Stellar_Outpost.Components
             // Prevent the player from running faster than his top speed.            
             deltaMovement.X = MathHelper.Clamp(velocity.X, -MaxMoveSpeed, MaxMoveSpeed);
 
-            var cr = new CollisionResult();
-            isOnGround = false;
-            var hitCollider = Entity.GetComponent<Mover>().Move(deltaMovement, out cr);
-            if (hitCollider)
-            {
-                isOnGround = true;
-            }
+            //var body = Entity.GetComponent<FSRigidBody>();
+            //body.SetLinearVelocity(deltaMovement);
 
-            //HandleCollisions(ref deltaMovement);
-            
+            //var mover = Entity.GetComponent<Mover>();
+            //var cr = new CollisionResult();
+            //isOnGround = false;
+
+            //if (mover.Move(deltaMovement, out cr))
+            //{
+            //    isOnGround = true;
+            //}
+
+            HandleCollisions(ref deltaMovement);
+
+            var body = Entity.GetComponent<FSRigidBody>();
+            body.SetLinearVelocity(deltaMovement);
+
             //Entity.Position += deltaMovement;
             //Entity.Position = new Vector2((float)Math.Round(Entity.Position.X), (float)Math.Round(Entity.Position.Y));
         }
@@ -118,13 +132,24 @@ namespace Stellar_Outpost.Components
             // Reset flag to search for ground collision.
             isOnGround = false;
 
-            CollisionResult collisionResult;
-            if (Entity.GetComponent<Collider>().CollidesWithAny(ref deltaMovement, out collisionResult))
+            FSCollisionResult fsCollisionResult;
+            if (Entity.GetComponent<FSCollisionBox>().Fixture.CollidesWithAnyFixtures(ref deltaMovement, out fsCollisionResult))
             {
-                // log the CollisionResult. You may want to use it to add some particle effects or anything else relevant to your game.
-                Debug.Log("collision result: {0} {1}", collisionResult.Collider.Entity.Name, deltaMovement);
+                Debug.Log("collision result: {0} {1}", fsCollisionResult, deltaMovement);
                 isOnGround = true;
             }
+
+
+
+
+            //CollisionResult collisionResult;
+
+            //if (Entity.GetComponent<Collider>().CollidesWithAny(ref deltaMovement, out collisionResult))
+            //{
+            //    // log the CollisionResult. You may want to use it to add some particle effects or anything else relevant to your game.
+            //    Debug.Log("collision result: {0} {1}", collisionResult.Collider.Entity.Name, deltaMovement);
+            //    isOnGround = true;
+            //}
 
             if (MathF.Abs(deltaMovement.X) < 0.001f)
                 deltaMovement.X = 0;

@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nez;
+using Nez.Farseer;
 using Nez.Sprites;
 using Stellar_Outpost.Components;
 using System.Collections;
@@ -24,8 +25,16 @@ namespace Stellar_Outpost
 
 			var scene = Scene.CreateWithDefaultRenderer(Color.LightSkyBlue);
 
-			//var player = scene.CreateEntity("player");
-			//player.AddComponent(new Player());
+
+			// create a physics world to manage the physics simulation
+			var world = scene.AddSceneComponent<FSWorld>()
+				.SetEnableMousePicking(true);
+			world.SetEnabled(true);
+
+			scene.CreateEntity("debug-view")
+				.AddComponent(new FSDebugView(world))
+				.AppendFlags(FSDebugView.DebugViewFlags.ContactPoints);
+
 
 			StartCoroutine(spawnPlayer());
 
@@ -34,8 +43,11 @@ namespace Stellar_Outpost
 			for (var i=0; i< 2; i++)
             {
 				var grass = scene.CreateEntity($"grass-{i}");
-				grass.AddComponent(new SpriteRenderer(grassTex));
-				grass.AddComponent(new BoxCollider());
+				grass.AddComponent(new SpriteRenderer(grassTex))
+					 .AddComponent<FSRigidBody>()
+					 .SetBodyType(FarseerPhysics.Dynamics.BodyType.Static)
+					 .AddComponent<FSCollisionBox>()
+					 .SetSize(grassTex.Width, grassTex.Height);
 				grass.Position = new Vector2(640 + i*grassTex.Width, 410);
 			}
 
@@ -47,7 +59,13 @@ namespace Stellar_Outpost
 
 		}
 
-		IEnumerator spawnPlayer()
+        protected override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+			Scene.GetSceneComponent<FSWorld>().Update();
+        }
+
+        IEnumerator spawnPlayer()
         {
 			yield return Coroutine.WaitForSeconds(0.3f);
 
