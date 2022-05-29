@@ -1,13 +1,9 @@
-﻿using Nez;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nez.Sprites;
+﻿using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
+using Nez;
 using Nez.Farseer;
-using FarseerPhysics.Dynamics;
+using Nez.Sprites;
+using System;
 
 namespace Stellar_Outpost.Components
 {
@@ -47,7 +43,7 @@ namespace Stellar_Outpost.Components
             Entity
                 .AddComponent(new SpriteRenderer(texture))
                 .AddComponent<FSRigidBody>()
-                .SetBodyType(BodyType.Dynamic)
+                .SetBodyType(BodyType.Kinematic)
                 .SetGravityScale(9.8f)
                 .AddComponent<FSCollisionBox>()
                 .SetSize(texture.Width, texture.Height);
@@ -62,11 +58,13 @@ namespace Stellar_Outpost.Components
 
         private void OnBodySeparation(Fixture fixtureA, Fixture fixtureB)
         {
+            Debug.Log("Body collision separation");
             isOnGround = false;
         }
 
         private bool OnBodyCollision(Fixture fixtureA, Fixture fixtureB, FarseerPhysics.Dynamics.Contacts.Contact contact)
         {
+            Debug.Log("Body collision detect");
             isOnGround = true;
             return true;
         }
@@ -105,9 +103,9 @@ namespace Stellar_Outpost.Components
         {
             float elapsed = Time.DeltaTime;
             velocity.X += movement * MoveAcceleration * elapsed;
-            //velocity.Y = MathHelper.Clamp(velocity.Y + GravityAcceleration * elapsed, -MaxFallSpeed, MaxFallSpeed);
-            //velocity.Y = DoJump(velocity.Y);
-            velocity.Y = 0;
+            velocity.Y = MathHelper.Clamp(velocity.Y + GravityAcceleration * elapsed, -MaxFallSpeed, MaxFallSpeed);
+            velocity.Y = DoJump(velocity.Y);
+            //velocity.Y = 0;
 
             // Apply pseudo-drag horizontally.
             if (IsOnGround)
@@ -125,12 +123,13 @@ namespace Stellar_Outpost.Components
             }
 
             var body = Entity.GetComponent<FSRigidBody>();
-            body.SetLinearVelocity(deltaMovement);
-
+            //body.SetLinearVelocity(deltaMovement);
             
 
+            Entity.Position += deltaMovement;
 
-            Debug.Log("deltaMovement: {0}", deltaMovement);
+
+            //Debug.Log("deltaMovement: {0}", deltaMovement);
 
             var collider = Entity.GetComponent<FSCollisionBox>();
             
