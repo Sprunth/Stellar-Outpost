@@ -44,7 +44,7 @@ namespace Stellar_Outpost.Components
             var texture = Entity.Scene.Content.LoadTexture(Content.Player);
             Entity.AddComponent(new SpriteRenderer(texture));
             Entity.AddComponent<Mover>();
-            Entity.AddComponent<CircleCollider>();
+            Entity.AddComponent<BoxCollider>();
             Entity.Position = new Vector2(640, 90);
 
             
