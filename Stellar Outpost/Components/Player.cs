@@ -44,7 +44,7 @@ namespace Stellar_Outpost.Components
             var texture = Entity.Scene.Content.LoadTexture(Content.Player);
             Entity.AddComponent(new SpriteRenderer(texture));
             Entity.AddComponent<Mover>();
-            Entity.AddComponent<BoxCollider>();
+            Entity.AddComponent<CircleCollider>();
             Entity.Position = new Vector2(640, 90);
 
             
@@ -62,10 +62,10 @@ namespace Stellar_Outpost.Components
 
         void GetInput()
         {
-            if (Input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Left))
+            if (Input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.A))
             {
                 movement = -1;
-            } else if (Input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Right))
+            } else if (Input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.D))
             {
                 movement = 1;
             } else
@@ -98,9 +98,19 @@ namespace Stellar_Outpost.Components
             var deltaMovement = velocity * elapsed;
             // Prevent the player from running faster than his top speed.            
             deltaMovement.X = MathHelper.Clamp(velocity.X, -MaxMoveSpeed, MaxMoveSpeed);
-            HandleCollisions(ref deltaMovement);
-            Entity.Position += deltaMovement;
-            Entity.Position = new Vector2((float)Math.Round(Entity.Position.X), (float)Math.Round(Entity.Position.Y));
+
+            var cr = new CollisionResult();
+            isOnGround = false;
+            var hitCollider = Entity.GetComponent<Mover>().Move(deltaMovement, out cr);
+            if (hitCollider)
+            {
+                isOnGround = true;
+            }
+
+            //HandleCollisions(ref deltaMovement);
+            
+            //Entity.Position += deltaMovement;
+            //Entity.Position = new Vector2((float)Math.Round(Entity.Position.X), (float)Math.Round(Entity.Position.Y));
         }
 
         void HandleCollisions(ref Vector2 deltaMovement)
