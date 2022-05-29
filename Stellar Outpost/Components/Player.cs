@@ -12,7 +12,10 @@ namespace Stellar_Outpost.Components
     // inspiration: https://github.com/MonoGame/MonoGame.Samples/blob/develop/Platformer2D/Platformer2D.Core/Game/Player.cs
     internal class Player : Component, IUpdatable
     {
-        private const float MoveAcceleration = 13000.0f;
+        private const float MoveAcceleration = 130.0f;
+        private const float MaxMoveSpeed = 1750.0f;
+        private const float GroundDragFactor = 0.48f;
+        private const float AirDragFactor = 0.58f;
 
         private const float MaxJumpTime = 0.35f;
         private const float JumpLaunchVelocity = -3500.0f;
@@ -53,7 +56,7 @@ namespace Stellar_Outpost.Components
             ApplyPhysics();
 
             // Clear input.
-            //movement = 0.0f;
+            movement = 0.0f;
             isJumping = false;
         }
 
@@ -65,12 +68,15 @@ namespace Stellar_Outpost.Components
             } else if (Input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Right))
             {
                 movement = 1;
+            } else
+            {
+                movement = 0;
             }
 
             isJumping = Input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.Space);
             if (isJumping)
             {
-                Debug.Log("Detected jump");
+                Debug.Log("{0} jumping", Time.FrameCount);
             }
         }
 
@@ -79,9 +85,19 @@ namespace Stellar_Outpost.Components
             float elapsed = Time.DeltaTime;
             velocity.X += movement * MoveAcceleration * elapsed;
             velocity.Y = MathHelper.Clamp(velocity.Y + GravityAcceleration * elapsed, -MaxFallSpeed, MaxFallSpeed);
+            
+            
             velocity.Y = DoJump(velocity.Y);
-            //Debug.Log($"Velocity: {velocity.Y}");
+
+            // Apply pseudo-drag horizontally.
+            if (IsOnGround)
+                velocity.X *= GroundDragFactor;
+            else
+                velocity.X *= AirDragFactor;
+
             var deltaMovement = velocity * elapsed;
+            // Prevent the player from running faster than his top speed.            
+            deltaMovement.X = MathHelper.Clamp(velocity.X, -MaxMoveSpeed, MaxMoveSpeed);
             HandleCollisions(ref deltaMovement);
             Entity.Position += deltaMovement;
             Entity.Position = new Vector2((float)Math.Round(Entity.Position.X), (float)Math.Round(Entity.Position.Y));
@@ -96,9 +112,14 @@ namespace Stellar_Outpost.Components
             if (Entity.GetComponent<Collider>().CollidesWithAny(ref deltaMovement, out collisionResult))
             {
                 // log the CollisionResult. You may want to use it to add some particle effects or anything else relevant to your game.
-                //Debug.Log("collision result: {0}", collisionResult);
+                Debug.Log("collision result: {0} {1}", collisionResult.Collider.Entity.Name, deltaMovement);
                 isOnGround = true;
             }
+
+            if (MathF.Abs(deltaMovement.X) < 0.001f)
+                deltaMovement.X = 0;
+            if (MathF.Abs(deltaMovement.Y) < 0.001f)
+                deltaMovement.Y = 0;
         }
 
         float DoJump(float velocityY)

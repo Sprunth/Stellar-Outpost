@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.Sprites;
 using Stellar_Outpost.Components;
+using System.Collections;
+
 namespace Stellar_Outpost
 {
     public class Game1 : Core
@@ -22,13 +24,14 @@ namespace Stellar_Outpost
 
 			var scene = Scene.CreateWithDefaultRenderer(Color.LightSkyBlue);
 
-			var player = scene.CreateEntity("player");
-			player.AddComponent(new Player());
+			//var player = scene.CreateEntity("player");
+			//player.AddComponent(new Player());
 
+			StartCoroutine(spawnPlayer());
 
 			var grassTex = Content.LoadTexture(Nez.Content.Grass);
 			
-			for (var i=0; i< 5; i++)
+			for (var i=0; i< 2; i++)
             {
 				var grass = scene.CreateEntity($"grass-{i}");
 				grass.AddComponent(new SpriteRenderer(grassTex));
@@ -42,6 +45,14 @@ namespace Stellar_Outpost
 			scene.Camera.Zoom = 0;
 			Scene = scene;
 
+		}
+
+		IEnumerator spawnPlayer()
+        {
+			yield return Coroutine.WaitForSeconds(0.3f);
+
+			var player = Scene.CreateEntity("player");
+			player.AddComponent(new Player());
 		}
 	}
 }
