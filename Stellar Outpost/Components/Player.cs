@@ -35,7 +35,7 @@ namespace Stellar_Outpost.Components
         private float movement;
 
         Vector2 velocity = Vector2.Zero;
-        bool isJumping, wasJumping;
+        bool isJumping, wasJumping = false;
         float jumpTime;
 
         public override void OnAddedToEntity()
@@ -45,6 +45,8 @@ namespace Stellar_Outpost.Components
             Entity.AddComponent(new SpriteRenderer(texture));
             Entity.AddComponent<Mover>();
             Entity.AddComponent<BoxCollider>();
+            Entity.GetComponent<BoxCollider>().PhysicsLayer = 5;
+            Entity.GetComponent<BoxCollider>().SetLocalOffset(new Vector2(0.1f));
             Entity.Position = new Vector2(640, 90);
 
             
@@ -112,7 +114,6 @@ namespace Stellar_Outpost.Components
             Entity.Position += deltaMovement;
             Entity.Position = new Vector2((float)Math.Round(Entity.Position.X), (float)Math.Round(Entity.Position.Y));
 
-            
         }
 
         void HandleCollisions(ref Vector2 deltaMovement)
@@ -138,7 +139,40 @@ namespace Stellar_Outpost.Components
             //}
 
             CollisionResult cr;
-            collider.CollidesWithAny(ref deltaMovement, out cr);
+            if (collider.CollidesWithAny(ref deltaMovement, out cr))
+            {
+                //isOnGround = true;
+            }
+
+            var rayStart = new Vector2(collider.Bounds.Center.X, collider.Bounds.Bottom);
+            //Debug.DrawHollowRect(new Rectangle(new Point((int)rayStart.X, (int)rayStart.Y), new Point(20, 5)), Color.Black, 2);
+            //Debug.DrawPixel(rayStart, 5, Color.Orange, 2);
+            var hit = Physics.Linecast(rayStart, rayStart + new Vector2(0, 3f), 2);
+            //Debug.DrawLine(rayStart, rayStart + new Vector2(0, 3f), Color.Orange, 2);
+            var overlapRect = new RectangleF(rayStart, new Vector2(12, 4));
+            var oppCol = Physics.OverlapRectangle(overlapRect, 2);
+            Debug.DrawHollowRect(new Rectangle((int)overlapRect.Left, (int)overlapRect.Top, (int)overlapRect.Width, (int)overlapRect.Height), Color.Orange, 0.5f);
+            if (oppCol != null)
+            {
+                //Debug.Log("overlapRect found collider: {0}", oppCol.Entity.Name);
+                isOnGround = true;
+            }
+
+            //{
+            //    if (collider.CollidesWithAny(out cr))
+            //    {
+            //        Debug.Log("overlap check found collider: {0}", cr.Collider.Entity.Name);
+            //        isOnGround = true;
+            //        deltaMovement.Y = -cr.MinimumTranslationVector.Y;
+            //    }
+            //}
+
+            //if (hit.Collider != null)
+            //{
+            //    Debug.Log("linecast found collider: {0}", hit.Collider.Entity.Name);
+            //    isOnGround = true;
+            //    deltaMovement.Y = 0;
+            //}
         }
 
         float DoJump(float velocityY)
@@ -154,6 +188,7 @@ namespace Stellar_Outpost.Components
 
                     jumpTime += (float)Time.DeltaTime;
                     //sprite.PlayAnimation(jumpAnimation);
+                    Debug.Log("Starting or continuing jump");
                 }
 
                 // If we are in the ascent of the jump
@@ -161,9 +196,11 @@ namespace Stellar_Outpost.Components
                 {
                     // Fully override the vertical velocity with a power curve that gives players more control over the top of the jump
                     velocityY = JumpLaunchVelocity * (1.0f - (float)Math.Pow(jumpTime / MaxJumpTime, JumpControlPower));
+                    Debug.Log("still going up in jump");
                 }
                 else
                 {
+                    Debug.Log("dud jump {0}. IsOnGround={1}", jumpTime, IsOnGround);
                     // Reached the apex of the jump
                     jumpTime = 0.0f;
                 }
@@ -172,6 +209,7 @@ namespace Stellar_Outpost.Components
             {
                 // Continues not jumping or cancels a jump in progress
                 jumpTime = 0.0f;
+
             }
             wasJumping = isJumping;
 

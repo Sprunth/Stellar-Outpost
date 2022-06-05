@@ -31,11 +31,12 @@ namespace Stellar_Outpost
 
 			var grassTex = Content.LoadTexture(Nez.Content.Grass);
 			
-			for (var i=0; i< 2; i++)
+			for (var i=0; i< 27; i++)
             {
 				var grass = scene.CreateEntity($"grass-{i}");
 				grass.AddComponent(new SpriteRenderer(grassTex));
 				grass.AddComponent(new BoxCollider());
+				grass.GetComponent<BoxCollider>().PhysicsLayer = 2;
 				grass.Position = new Vector2(640 + i*grassTex.Width, 410);
 			}
 
