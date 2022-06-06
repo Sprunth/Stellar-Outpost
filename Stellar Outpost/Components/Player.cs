@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Nez.Sprites;
 using Microsoft.Xna.Framework;
+using Nez.Textures;
 
 namespace Stellar_Outpost.Components
 {
@@ -18,9 +19,9 @@ namespace Stellar_Outpost.Components
         private const float AirDragFactor = 0.58f;
 
         private const float MaxJumpTime = 0.35f;
-        private const float JumpLaunchVelocity = -3500.0f;
+        private const float JumpLaunchVelocity = -950.0f;
         private const float JumpControlPower = 0.14f;
-        private const float GravityAcceleration = 3400.0f;
+        private const float GravityAcceleration = 340.0f;
         private const float MaxFallSpeed = 550.0f;
 
         public bool IsOnGround
@@ -38,18 +39,25 @@ namespace Stellar_Outpost.Components
         bool isJumping, wasJumping = false;
         float jumpTime;
 
+        int animationIndex = 0;
+        List<Sprite> IdleSprites;
+
         public override void OnAddedToEntity()
         {
             base.OnAddedToEntity();
-            var texture = Entity.Scene.Content.LoadTexture(Content.Player);
-            Entity.AddComponent(new SpriteRenderer(texture));
+            //var texture = Entity.Scene.Content.LoadTexture(Content.Player);
+            var texture = Entity.Scene.Content.LoadTexture(Content.RangerIdle);
+            IdleSprites = Sprite.SpritesFromAtlas(texture, 48, 48);
+            Entity.AddComponent(new SpriteRenderer(IdleSprites[0]));
             Entity.AddComponent<Mover>();
             Entity.AddComponent<BoxCollider>();
-            Entity.GetComponent<BoxCollider>().PhysicsLayer = 5;
-            Entity.GetComponent<BoxCollider>().SetLocalOffset(new Vector2(0.1f));
+            var collider = Entity.GetComponent<BoxCollider>();
+            collider.PhysicsLayer = 5;
+            //collider.SetLocalOffset(new Vector2(0.1f));
+            collider.SetSize(48, 48);
             Entity.Position = new Vector2(640, 90);
 
-            
+            Core.StartCoroutine(RollThroughAnimations());
         }
 
         void IUpdatable.Update()
@@ -111,6 +119,16 @@ namespace Stellar_Outpost.Components
 
             HandleCollisions(ref deltaMovement);
 
+
+            if (deltaMovement.X > 0)
+            {
+                Entity.GetComponent<SpriteRenderer>().FlipX = false;
+            } else if (deltaMovement.X < 0)
+            {
+                Entity.GetComponent<SpriteRenderer>().FlipX = true;
+            } // else stick with what was already set
+
+
             Entity.Position += deltaMovement;
             Entity.Position = new Vector2((float)Math.Round(Entity.Position.X), (float)Math.Round(Entity.Position.Y));
 
@@ -151,7 +169,7 @@ namespace Stellar_Outpost.Components
             //Debug.DrawLine(rayStart, rayStart + new Vector2(0, 3f), Color.Orange, 2);
             var overlapRect = new RectangleF(rayStart, new Vector2(12, 4));
             var oppCol = Physics.OverlapRectangle(overlapRect, 2);
-            Debug.DrawHollowRect(new Rectangle((int)overlapRect.Left, (int)overlapRect.Top, (int)overlapRect.Width, (int)overlapRect.Height), Color.Orange, 0.5f);
+            Debug.DrawHollowRect(new Rectangle((int)overlapRect.Left, (int)overlapRect.Top, (int)overlapRect.Width, (int)overlapRect.Height), Color.Orange, 0.3f);
             if (oppCol != null)
             {
                 //Debug.Log("overlapRect found collider: {0}", oppCol.Entity.Name);
@@ -214,6 +232,22 @@ namespace Stellar_Outpost.Components
             wasJumping = isJumping;
 
             return velocityY;
+        }
+
+        IEnumerator<object> RollThroughAnimations()
+        {
+            while (true)
+            {
+                yield return Coroutine.WaitForSeconds(0.2f);
+
+                animationIndex++;
+
+                if (animationIndex >= IdleSprites.Count)
+                {
+                    animationIndex = 0;
+                }
+                Entity.GetComponent<SpriteRenderer>().Sprite = IdleSprites[animationIndex];
+            }
         }
     }
 }

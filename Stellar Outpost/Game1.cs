@@ -40,8 +40,6 @@ namespace Stellar_Outpost
 				grass.Position = new Vector2(640 + i*grassTex.Width, 410);
 			}
 
-			
-
 
 			scene.Camera.Zoom = 0;
 			Scene = scene;
